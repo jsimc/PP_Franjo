@@ -1,0 +1,5 @@
+TUDJMAN
+    <<<pom> _ -> int>, 5>
+    <<<pom1> _ -> int>, 6>
+    <<<main> x:5:int>, <pom>>
+FRANJO

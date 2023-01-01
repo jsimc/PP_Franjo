@@ -1,0 +1,11 @@
+TUDJMAN
+    <<<pom> _ -> int>, 5>
+    <<<brr> x:int -> string>,
+        <<declare br : 15 : int>
+        <case br == 5 -> "da!">
+        <default -> "ne!">
+    >
+    <<main>, <pom>
+             <<brr> s>
+    >
+FRANJO

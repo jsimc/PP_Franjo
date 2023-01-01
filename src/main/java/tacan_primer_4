@@ -1,0 +1,7 @@
+TUDJMAN
+<<<pom> y:int, z:char -> int>, y+1>
+<<<pom2> _ -> char>, 'c'>
+<<<main> x:int>, <<pom> y:x+1:int, z:'j':char>
+                 <pom2>
+>
+FRANJO

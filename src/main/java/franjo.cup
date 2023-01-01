@@ -1,0 +1,424 @@
+// import section
+import java_cup.runtime.*;
+import java.io.*;
+
+parser code {:
+    public int errNo = 0;
+    public int warnNo = 0;
+
+    //SymbolTable symbolTable;
+
+    public static void main(String[] args) {
+        try {
+            File file = new File("C:\\Users\\Jelena\\Documents\\faks\\5. semestar\\Programski prevodioci\\Franjo2.0\\src\\main\\java\\tacan_primer_2");
+            FileReader fileReader = new FileReader(file);
+            Scanner scanner = new FranjoLexer(fileReader);
+            parser parser = new parser(scanner);
+            parser.parse();
+            parser.checkWarnings();
+            if(parser.errNo == 0){
+                System.out.println("Analiza zavrsena. U kodu nema gresaka.");
+            } else {
+                System.out.println("Analiza zavrsena. Broj gresaka: " + parser.errNo);
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+    
+    public void checkWarnings() {
+        //SymbolNode current = symbolTable.getVariables();
+    }
+
+   public void syntax_error(Symbol cur_token)
+   {
+
+   }
+
+   public void report_error(String message, Object info)
+   {
+   	   System.out.print(message);
+   }
+
+   public int getLine()
+   {
+      return ((FranjoLexer) getScanner()).getLine();
+   }
+:};
+
+//init with {:
+//    s.init();
+//:};
+
+//scan with {:
+//    return s.next_token();
+//:};
+
+//Terminal symbols
+terminal FRANJO, TUDJMAN, MAIN, DECLARE, DEFAULT, CASE;
+terminal ID, CONST, LAB, RAB, ASSIGN, RETURN_SIGN, LP, RP, COMMA, PLUS;
+terminal MINUS, MUL, DIV, MOD, OR, AND, INT, CHAR, BOOL, FLOAT, STRING, EQUAL, NOT_EQUAL, UNDERSCORE;
+
+non terminal Program, Blok, Main, DefineFunction, FunBody, CallFuns, CallFun, DeclareList, DeclareStmt;
+non terminal DeclareArgs, CallArgs, DefineArgs, DeclareArg, CallArg, DefineArg;
+non terminal Expression, AndExpression, RelExpression, ArExpression, Term, Factor;
+non terminal RelOp, Type, Cases, Case, Default;
+
+//precedence
+precedence nonassoc COMMA;
+precedence nonassoc EQUAL, NOT_EQUAL;
+precedence left MUL, DIV, MOD;
+precedence left PLUS, MINUS;
+precedence left LAB, RAB;
+precedence left DECLARE, CASE, DEFAULT, ID;
+precedence left MAIN;
+
+
+//PITAJ AKO MENI ASSIGN NE IZGLEDA STANDARDNO a = 5, nego a:5:Int, kakav je to precedence???
+
+
+start with Program;
+
+
+//Grammar
+Program ::= TUDJMAN Blok FRANJO 
+        {:
+            System.out.println("Program -> TUDJMAN Blok FRANJO");
+        :}
+        | FRANJO Blok TUDJMAN {:
+            System.out.println("Program -> FRANJO Blok TUDJMAN");
+        :}
+        | TUDJMAN Blok error {:
+            System.out.println("GRESKA: Nedostaje 'FRANJO' na kraju programa");
+            parser.errNo++;
+        :}
+        | FRANJO Blok error {:
+            System.out.println("GRESKA: Nedostaje 'TUDJMAN' na kraju programa");
+            parser.errNo++;
+        :}
+        | FRANJO Blok {:
+            System.out.println(" GRESKA: Nedostaje 'TUDJMAN' na kraju programa");
+            parser.errNo++;
+        :}
+        | TUDJMAN Blok {:
+            System.out.println("GRESKA: Nedostaje 'FRANJO' na kraju programa");
+            parser.errNo++;
+        :}
+        | FRANJO TUDJMAN error{:
+            System.out.println("GRESKA: Nedostaje Blok naredbi izmedju Franje i Tudjmana");
+            parser.errNo++;
+        :}
+        | FRANJO Blok TUDJMAN error{:
+            System.out.println("GRESKA: Mora da se zavrsi sa 'TUDJMAN'");
+            parser.errNo++;
+        :}
+        | TUDJMAN Blok FRANJO error{:
+            System.out.println("GRESKA: Mora da se zavrsi sa 'FRANJO'");
+            parser.errNo++;
+        :};
+
+Blok ::= Main
+        {:
+            System.out.println("Blok -> Main");
+        :}
+        | DefineFunction Blok 
+        {:
+            System.out.println("Blok -> Blok DefineFunction");
+        :}
+        | DefineFunction {:
+            System.out.println("GRESKA: Nedostaje MAIN blok");
+            parser.errNo++;
+        :};
+
+Main ::= LAB LAB LAB MAIN RAB DefineArgs RAB COMMA FunBody RAB 
+        {:
+            System.out.println("Main -> <<<main> DefineArgs>, FunBody >");
+        :}
+        | LAB LAB MAIN RAB COMMA FunBody RAB
+        {:
+            System.out.println("Main -> <<main>, FunBody >");
+        :}
+        | LAB LAB LAB MAIN RAB DefineArgs RAB COMMA FunBody error{:
+            System.out.println("GRESKA: Nedostaje ZATVORENA UGLASTA ZAGRADA.");
+            parser.errNo++;
+        :}
+        | LAB LAB MAIN RAB COMMA FunBody error{:
+            System.out.println("GRESKA: Nedostaje ZATVORENA UGLASTA ZAGRADA.");
+            parser.errNo++;
+        :}
+        | LAB LAB MAIN RAB COMMA FunBody {:
+            System.out.println("GRESKA: Nedostaje ZATVORENA UGLASTA ZAGRADA.");
+            parser.errNo++;
+        :}
+        | LAB LAB MAIN RAB DefineArgs RAB COMMA FunBody RAB {:
+            System.out.println("GRESKA: Nedostaje OTVORENA UGLASTA ZAGRADA.");
+            parser.errNo++;
+        :}
+        | LAB LAB LAB MAIN RAB error {:
+            System.out.println("GRESKA: Main: Koristi DefineArgs.");
+            parser.errNo++;
+        :};
+
+DeclareArgs ::= DeclareArg COMMA DeclareArgs 
+        {:
+            System.out.println("DeclareArgs -> DeclareArg, DeclareArgs");
+        :}
+        | DeclareArg
+        {:
+            System.out.println("DeclareArgs -> DeclareArg");
+        :};
+
+DeclareArg ::= ID ASSIGN Expression ASSIGN Type 
+        {:
+            System.out.println("DeclareArg -> ID : Expression : Type");
+        :}
+        | ID ASSIGN Expression
+        {:
+            System.out.println("DeclareArg -> ID : Expression");
+        :} 
+        | DefineArg
+        {:
+            System.out.println("DeclareArg -> DefineArg");
+        :};
+
+DefineArgs ::= DefineArg COMMA DefineArgs 
+        {:
+            System.out.println("DefineArgs -> DefineArg, DefineArgs");
+        :}
+        | DefineArg
+        {:
+            System.out.println("DefineArgs -> DefineArg");
+        :};
+
+DefineArg ::= ID ASSIGN Type 
+        {:
+            System.out.println("DefineArg -> ID : Type");
+        :};
+
+CallArgs ::= CallArg COMMA CallArgs 
+        {:
+            System.out.println("CallArgs -> CallArg, CallArgs");
+        :}
+        | CallArg
+        {:
+            System.out.println("CallArgs -> CallArg");
+        :};
+
+CallArg ::= ID ASSIGN Expression ASSIGN Type 
+        {:
+            System.out.println("CallArg -> ID : Expression : Type");
+        :}
+        | ID
+        {:
+            System.out.println("CallArg -> ID");
+        :};
+
+Expression ::= Expression OR AndExpression 
+        {:
+            System.out.println("Expression -> Expression || AndExpression");
+        :}
+        | AndExpression
+        {:
+            System.out.println("Expression -> AndExpression");
+        :};
+
+AndExpression ::= AndExpression AND RelExpression 
+        {:
+            System.out.println("AndExpression -> AndExpression && RelExpression");
+        :}
+        | RelExpression
+        {:
+            System.out.println("AndExpression -> RelExpression");
+        :};
+
+RelExpression ::= ArExpression RelOp ArExpression 
+        {:
+            System.out.println("RelExpression -> ArExpression RelOp ArExpression");
+        :}
+        | ArExpression
+        {:
+            System.out.println("RelExpression -> ArExpression");
+        :};
+
+ArExpression ::=  Term PLUS ArExpression 
+        {:
+            System.out.println("ArExpression ->  Term + ArExpression");
+        :}
+        | Term MINUS ArExpression 
+        {:
+            System.out.println("ArExpression ->  Term - ArExpression");
+        :}
+        | Term 
+        {:
+            System.out.println("ArExpression ->  Term");
+        :};
+
+Term ::= Term MUL Factor 
+        {:
+            System.out.println("Term -> Term * Factor");
+        :}
+        | Term DIV Factor 
+        {:
+            System.out.println("Term -> Term / Factor");
+        :}
+        | Term MOD Factor 
+        {:
+            System.out.println("Term -> Term % Factor");
+        :}
+        | Factor
+        {:
+            System.out.println("Term -> Factor");
+        :};
+
+Factor ::= ID 
+        {:
+            System.out.println("Factor -> ID");
+        :}
+        | CONST 
+        {:
+            System.out.println("Factor -> CONST");
+        :}
+        | LP Expression RP 
+        {:
+            System.out.println("Factor -> ( Expression )");
+        :}
+        | CallFuns
+        {:
+            System.out.println("Factor -> CallFun");
+        :};
+
+Case ::= LAB CASE Expression RelOp Expression RETURN_SIGN Expression RAB
+        {:
+            System.out.println("Case -> < case Expression RelOp Expression -> Expression >");
+        :}
+        | LAB CASE error 
+        {:
+            System.out.println("GRESKA: Trazi se Expression!");
+            parser.errNo++;
+        :}
+        | LAB CASE Expression RelOp Expression RETURN_SIGN Expression error
+        {:
+            System.out.println("GRESKA: Fali '>'!");
+            parser.errNo++;
+        :};
+
+RelOp ::= EQUAL 
+        {:
+            System.out.println("RelOp -> ==");
+        :}
+        | NOT_EQUAL
+        {:
+            System.out.println("RelOp -> !=");
+        :};
+
+CallFuns ::= CallFun CallFuns 
+        {:
+            System.out.println("CallFuns -> CallFun CallFuns");
+        :}
+        | CallFun {:
+            System.out.println("CallFuns -> CallFun");
+        :};
+
+CallFun ::= LAB LAB ID RAB CallArgs RAB 
+        {:
+            System.out.println("CallFun -> <<ID> CallArgs>");
+        :}
+        | LAB ID RAB
+        {:
+            System.out.println("CallFun -> <ID>");
+        :};
+
+// Ako funkcija nema argumente a pozivamo je,
+// npr. toString(), to se poziva kao: <toString>
+DefineFunction ::= LAB LAB LAB ID RAB DefineArgs RETURN_SIGN Type RAB COMMA FunBody RAB
+        {:
+            System.out.println("DefineFunction -> <<<ID> DefineArgs -> Type>, FunBody>");
+        :}
+        | LAB LAB LAB ID RAB DefineArgs RETURN_SIGN Type RAB COMMA FunBody error{:
+            System.out.println("GRESKA: Fali zatvorena zagrada");
+            parser.errNo++;
+        :}
+        | LAB LAB LAB ID RAB UNDERSCORE RETURN_SIGN Type RAB COMMA FunBody RAB
+        {:
+            System.out.println("DefineFunction -> <<<ID> _ -> Type>, FunBody>");
+        :}
+        | LAB LAB LAB ID RAB UNDERSCORE RETURN_SIGN Type RAB COMMA FunBody error{:
+            System.out.println("GRESKA: Fali zatvorena zagrada");
+            parser.errNo++;
+        :}
+        | LAB LAB LAB ID RAB error {:
+            System.out.println("GRESKA: Koristi DefineArgss.");
+            parser.errNo++;
+        :};
+
+Type ::= CHAR 
+        {:
+            System.out.println("Type -> char");
+        :}
+        | INT 
+        {:
+            System.out.println("Type -> int");
+        :} 
+        | BOOL 
+        {:
+            System.out.println("Type -> bool");
+        :} 
+        | FLOAT 
+        {:
+            System.out.println("Type -> float");
+        :} 
+        | STRING
+        {:
+            System.out.println("Type -> string");
+        :};
+
+FunBody ::= Expression 
+        {:
+            System.out.println("FunBody -> Expression");
+        :}
+        | Cases 
+        {:
+            System.out.println("FunBody -> Cases");
+        :}
+        | DeclareList FunBody
+        {:
+            System.out.println("FunBody -> DeclareList FunBody");
+        :}
+        | DeclareList
+        {:
+            System.out.println("GRESKA: Fali telo funkcije");
+            parser.errNo++;
+        :};
+
+Cases ::= Case Cases 
+        {:
+            System.out.println("Cases -> Cases Case");
+        :}
+        | Case Default
+        {:
+            System.out.println("Cases -> Case Default");
+        :};
+
+Default ::= LAB DEFAULT RETURN_SIGN Expression RAB
+        {:
+            System.out.println("Default -> <default -> Expression>");
+        :};
+
+DeclareList ::= DeclareStmt DeclareList 
+        {:
+            System.out.println("DeclareList -> DeclareStmt DeclareList");
+        :}
+        | DeclareStmt
+        {:
+            System.out.println("DeclareList -> DeclareStmt");
+        :};
+
+DeclareStmt ::= LAB LAB DECLARE RAB DeclareArgs RAB
+        {:
+            System.out.println("DeclareStmt -> <<declare> DeclareArgs>");
+        :}
+        | LAB LAB DECLARE error 
+        {:
+            System.out.println("GRESKA: Fali '>'");
+            parser.errNo++;
+        :};
