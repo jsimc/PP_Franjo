@@ -1,2 +1,3 @@
 # PP_Franjo
-Programski prevodioci kompajler za programski jezik Franje Tuđmana (na latinici)
+Programski prevodioci kompajler projekat.
+Student Jelena Simić 27/20RN
