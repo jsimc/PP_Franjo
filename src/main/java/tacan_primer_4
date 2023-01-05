@@ -1,7 +1,7 @@
-TUDJMAN
-<<<pom> y:int, z:char -> int>, y+1>
-<<<pom2> _ -> char>, 'c'>
-<<<main> x:int>, <<pom> y:x+1:int, z:'j':char>
-                 <pom2>
->
 FRANJO
+    <<<main> arg1 : float, arg2 : char, arg3 : int>,
+        <<declare> arg1 : 3.14>
+        <<declare> arg2 : 'c'>
+        arg1 + arg2
+    >
+TUDJMAN

@@ -1,7 +1,0 @@
-FRANJO
-    <<<main> arg1 : float, arg2 : char, arg3 : int>,
-        <<declare> arg1 : 3.14>
-        <<declare> arg2 : 'c'>
-        arg1 + arg2
-    >
-TUDJMAN

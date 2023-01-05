@@ -360,17 +360,24 @@ public class parser extends java_cup.runtime.lr_parser {
     //SymbolTable symbolTable;
 
     public static void main(String[] args) {
+        if(args.length == 0) {
+          System.out.println("Unesite ime fajla.");
+          return;
+        }
         try {
-            File file = new File("C:\\Users\\Jelena\\Documents\\faks\\5. semestar\\Programski prevodioci\\TudjmanFranjo\\src\\main\\java\\greska_primer_5");
-            FileReader fileReader = new FileReader(file);
-            Scanner scanner = new FranjoLexer(fileReader);
-            parser parser = new parser(scanner);
-            parser.parse();
-            parser.checkWarnings();
-            if(parser.errNo == 0){
-                System.out.println("Analiza zavrsena. U kodu nema gresaka.");
-            } else {
-                System.out.println("Analiza zavrsena. Broj gresaka: " + parser.errNo);
+            for(int i = 0; i < args.length; i++) {
+                System.out.println("args[" + i + "] = " + args[i]);
+                File file = new File(args[i]);
+                FileReader fileReader = new FileReader(file);
+                Scanner scanner = new FranjoLexer(fileReader);
+                parser parser = new parser(scanner);
+                parser.parse();
+                parser.checkWarnings();
+                if(parser.errNo == 0){
+                  System.out.println("Analiza zavrsena. U kodu nema gresaka.");
+                } else {
+                  System.out.println("Analiza zavrsena. Broj gresaka: " + parser.errNo);
+                }
             }
         } catch (Exception e) {
             System.out.println(e);
